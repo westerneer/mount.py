@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
-# Author: Christian Vallentin <mail@vallentinsource.com>
-# Website: http://vallentinsource.com
-# Repository: https://github.com/MrVallentin/mount.py
+# Original author: Christian Vallentin <mail@vallentinsource.com>
+# Updated by: Akos Rajtmar <akos@rajtmar.hu>
+# Website: https://rajtmar.hu
+# Repository: https://github.com/westerneer/mount.py
 #
-# Date Created: March 27, 2016
-# Last Modified: March 27, 2016
+# Date Created: March 25, 2016
+# Last Modified: December 06, 2017
 #
 # Developed and tested using Python 3.5.1
 
@@ -19,9 +20,9 @@ setup(
 	name="mount.py",
 	version="1.0",
 	py_modules=["mount"],
-	author="Christian Vallentin",
-	author_email="mail@vallentinsource.com",
-	url="https://github.com/MrVallentin/mount.py",
+	author="Akos Rajtmar, Christian Vallentin",
+	author_email="akos@rajtmar.hu",
+	url="https://github.com/westerneer/mount.py",
 	description="Python only module for listing, mounting and unmounting media devices",
 	long_description="mount.py is a simple, small and self-contained Python only module, for listing, mounting and unmounting media drives on Linux.",
 	keywords="listing media devices mount mounting unmount unmounting",

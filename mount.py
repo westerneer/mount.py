@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 
-# Author: Christian Vallentin <mail@vallentinsource.com>
-# Website: http://vallentinsource.com
-# Repository: https://github.com/MrVallentin/mount.py
+# Original author: Christian Vallentin <mail@vallentinsource.com>
+# Updated by: Akos Rajtmar <akos@rajtmar.hu>
+# Website: https://rajtmar.hu
+# Repository: https://github.com/westerneer/mount.py
 #
 # Date Created: March 25, 2016
-# Last Modified: March 27, 2016
+# Last Modified: December 06, 2017
 #
 # Developed and tested using Python 3.5.1
 
 import os
-
+import subprocess
+import re
 
 def list_media_devices():
 	# If the major number is 8, that indicates it to be a disk device.
@@ -50,40 +52,53 @@ def get_device_block_path(device):
 def get_media_path(device):
 	return "/media/" + get_device_name(device)
 
+def get_mountpoint(partition):
+	if not is_mounted(partition):
+		return False
+	return subprocess.check_output("df %s" % partition, shell=True).decode().splitlines()[1].split()[5]
 
-def get_partition(device):
-	os.system("fdisk -l %s > output" % device)
-	with open("output", "r") as f:
-		data = f.read()
-		return data.split("\n")[-2].split()[0].strip()
+def get_partitions(device):
+	partitions = []
+	for p in subprocess.check_output("fdisk -l %s" % device, shell=True).decode().splitlines():
+		result = re.search('/dev/[a-z]+[0-9]+',p)
+		if result:
+			partitions.append(result.group(0))
+	return partitions
 
 
-def is_mounted(device):
-	return os.path.ismount(get_media_path(device))
+def is_mounted(partition):
+	for line in subprocess.check_output("df %s" % partition, shell=True).decode().splitlines():
+		if re.search(partition, line):
+			 return True
+	return False
 
 
-def mount_partition(partition, name="usb"):
-	path = get_media_path(name)
-	if not is_mounted(path):
-		os.system("mkdir -p " + path)
+def mount_partition(partition, name=None):
+	if not name:
+		path = get_media_path(partition)
+	else:
+		path = get_media_path(name)
+	if not is_mounted(partition):
+		os.system("mkdir -p %s" % path)
 		os.system("mount %s %s" % (partition, path))
 
-def unmount_partition(name="usb"):
-	path = get_media_path(name)
-	if is_mounted(path):
-		os.system("umount " + path)
-		#os.system("rm -rf " + path)
+def unmount_partition(partition):
+	if is_mounted(partition):
+		folder = get_mountpoint(partition)
+		os.system("umount %s" % partition)
+		os.system("rmdir %s" % folder)
 
 
-def mount(device, name=None):
-	if not name:
-		name = get_device_name(device)
-	mount_partition(get_partition(device), name)
+def mount_all(device):
+	partitions = get_partitions(device)
+	for partition in partitions:
+		name = get_device_name(partition)
+		mount_partition(partition, name)
 
-def unmount(device, name=None):
-	if not name:
-		name = get_device_name(device)
-	unmount_partition(name)
+def unmount_all(device):
+	partitions = get_partitions(device)
+	for partition in partitions:
+		unmount_partition(partition)
 
 
 def is_removable(device):
@@ -107,6 +122,8 @@ def get_size(device):
 	
 	return -1
 
+def get_label(device):
+	return subprocess.check_output("lsblk --output LABEL %s" % device, shell=True).decode().splitlines()[2]
 
 def get_model(device):
 	path = get_device_block_path(device) + "/device/model"
@@ -129,7 +146,7 @@ if __name__ == "__main__":
 	devices = list_media_devices()
 	
 	for device in devices:
-		mount(device)
+		mount_all(device)
 		
 		print("Drive:", get_device_name(device))
 		print("Mounted:", "Yes" if is_mounted(device) else "No")
@@ -140,4 +157,4 @@ if __name__ == "__main__":
 		print("Vendor:", get_vendor(device))
 		print(" ")
 		
-		unmount(device)
+		unmount_all(device)

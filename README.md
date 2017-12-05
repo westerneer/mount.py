@@ -1,5 +1,5 @@
 
-# mount.py
+# mount.py -- TODO: Refresh the README
 
 [mount.py][mount.py] is a simple, small and self-contained [Python][Python] **only** module,
 for listing, mounting and unmounting media devices on Linux.
